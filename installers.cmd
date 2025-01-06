@@ -8,6 +8,8 @@ GOTO :CMDSCRIPT
 # See README.md for usage scenarios
 
 set -eux
+git rev-parse --short=13 HEAD
+mkdir -p /home/ide_builder/.m2/foo
 root="$(cd "$(dirname "$0")"; pwd)"
 exec "$root/platform/jps-bootstrap/jps-bootstrap.sh" "$@" "$root" intellij.idea.community.build OpenSourceCommunityInstallersBuildTarget
 :CMDSCRIPT
