@@ -21,6 +21,8 @@ RUN useradd --create-home ide_builder && \
     # the volume folder should be initialized for chmod effect not to be discarded if no corresponding volume is passed at the container runtime
     mkdir -p /home/ide_builder/.m2/repository && \
     chmod --recursive a+rwx /home/ide_builder
+# for jps-bootstrap itself
+ENV BOOTSTRAP_SYSTEM_PROPERTIES="-Duser.home=/home/ide_builder"
 # Community sources root
 VOLUME /community
 WORKDIR /community
