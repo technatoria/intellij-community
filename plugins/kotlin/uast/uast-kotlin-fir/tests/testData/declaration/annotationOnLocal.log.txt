@@ -7,6 +7,10 @@ UFile (package = test.pkg)
                 UDeclarationsExpression
                     UVariable (name = localFunction)
                         ULambdaExpression
+                            UAnnotation (fqName = kotlin.Suppress)
+                                UNamedExpression (name = names)
+                                    UPolyadicExpression (operator = +)
+                                        ULiteralExpression (value = "SdCardPath1")
                             UBlockExpression
                                 UQualifiedReferenceExpression
                                     USimpleNameReferenceExpression (identifier = x)
