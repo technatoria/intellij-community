@@ -3,7 +3,7 @@
 FernFlower is the first actually working analytical decompiler for Java and 
 probably for a high-level programming language in general. Naturally it is still 
 under development, please send your bug reports and improvement suggestions to the
-[issue tracker](https://youtrack.jetbrains.com/newIssue?project=IDEA&clearDraft=true&c=Subsystem+Java. Decompiler).
+[issue tracker](https://youtrack.jetbrains.com/newIssue?project=IDEA&clearDraft=true&c=Subsystem+Java.+Decompiler).
 
 ### FernFlower and ForgeFlower
 
