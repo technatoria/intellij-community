@@ -752,17 +752,11 @@ public class HighlightVisitorImpl extends JavaElementVisitor implements Highligh
     if (!hasErrorResults()) add(HighlightMethodUtil.checkConstructorInImplicitClass(method));
     if (!hasErrorResults()) add(HighlightControlFlowUtil.checkUnreachableStatement(method.getBody()));
     if (!hasErrorResults()) add(HighlightMethodUtil.checkConstructorHandleSuperClassExceptions(method));
-    if (!hasErrorResults()) add(HighlightMethodUtil.checkRecordAccessorDeclaration(method));
-    if (!hasErrorResults()) HighlightMethodUtil.checkRecordConstructorDeclaration(method, myErrorSink);
   }
 
   @Override
   public void visitMethodCallExpression(@NotNull PsiMethodCallExpression expression) {
-    visitElement(expression);
-    if (!hasErrorResults()) add(HighlightMethodUtil.checkConstructorCallProblems(expression));
-    if (!hasErrorResults()) add(HighlightMethodUtil.checkSuperAbstractMethodDirectCall(expression));
-
-    if (!hasErrorResults()) visitExpression(expression);
+    visitExpression(expression);
     if (!hasErrorResults()) {
       PreviewFeatureUtil.checkPreviewFeature(expression, myPreviewFeatureVisitor);
     }

@@ -194,7 +194,7 @@ public final class JavaErrorKinds {
     error(PsiMember.class, "class.must.implement.method")
       .withRange(member ->
                    member instanceof PsiEnumConstant enumConstant ? enumConstant.getNameIdentifier().getTextRangeInParent() :
-                   member instanceof PsiClass aClass ? JavaErrorFormatUtil.getClassDeclarationTextRange(aClass) : null)
+                   member instanceof PsiClass aClass ? getClassDeclarationTextRange(aClass) : null)
       .<PsiMethod>parameterized()
       .withRawDescription((member, abstractMethod) -> {
         PsiClass aClass = member instanceof PsiEnumConstant enumConstant ?
@@ -341,6 +341,38 @@ public final class JavaErrorKinds {
     error(PsiRecordComponent.class, "record.component.restricted.name")
       .withAnchor(PsiRecordComponent::getNameIdentifier)
       .withRawDescription(component -> message("record.component.restricted.name", component.getName()));
+  public static final Simple<PsiTypeParameterList> RECORD_SPECIAL_METHOD_TYPE_PARAMETERS =
+    error(PsiTypeParameterList.class, "record.special.method.type.parameters")
+      .withRawDescription(tpl -> message("record.special.method.type.parameters", getRecordMethodKind(((PsiMethod)tpl.getParent()))));
+  public static final Simple<PsiReferenceList> RECORD_SPECIAL_METHOD_THROWS =
+    error(PsiReferenceList.class, "record.special.method.throws")
+      .withAnchor(PsiReferenceList::getFirstChild)
+      .withRawDescription(throwsList -> message("record.special.method.throws", getRecordMethodKind(((PsiMethod)throwsList.getParent()))));
+  public static final Parameterized<PsiMethod, AccessModifier> RECORD_CONSTRUCTOR_STRONGER_ACCESS =
+    parameterized(PsiMethod.class, AccessModifier.class, "record.constructor.stronger.access")
+      .withAnchor((method, classModifier) -> method.getNameIdentifier())
+      .withRawDescription(
+        (method, classModifier) -> message("record.constructor.stronger.access", getRecordMethodKind(method), classModifier));
+  public static final Parameterized<PsiMethod, JavaIncompatibleTypeErrorContext> RECORD_ACCESSOR_WRONG_RETURN_TYPE =
+    parameterized(PsiMethod.class, JavaIncompatibleTypeErrorContext.class, "record.accessor.wrong.return.type")
+      .withAnchor((method, ctx) -> method.getReturnTypeElement())
+      .withRawDescription((method, ctx) -> message("record.accessor.wrong.return.type",
+                                                   ctx.lType().getPresentableText(), requireNonNull(ctx.rType()).getPresentableText()));
+  public static final Simple<PsiMethod> RECORD_ACCESSOR_NON_PUBLIC =
+    error(PsiMethod.class, "record.accessor.non.public").withAnchor(PsiMethod::getNameIdentifier);
+  public static final Simple<PsiMethod> RECORD_NO_CONSTRUCTOR_CALL_IN_NON_CANONICAL =
+    error(PsiMethod.class, "record.no.constructor.call.in.non.canonical").withAnchor(PsiMethod::getNameIdentifier);
+  public static final Parameterized<PsiParameter, PsiRecordComponent> RECORD_CANONICAL_CONSTRUCTOR_WRONG_PARAMETER_TYPE =
+    parameterized(PsiParameter.class, PsiRecordComponent.class, "record.canonical.constructor.wrong.parameter.type")
+      .withAnchor((parameter, component) -> parameter.getTypeElement())
+      .withRawDescription((parameter, component) -> message(
+        "record.canonical.constructor.wrong.parameter.type", component.getName(), component.getType().getPresentableText(),
+        parameter.getType().getPresentableText()));
+  public static final Parameterized<PsiParameter, PsiRecordComponent> RECORD_CANONICAL_CONSTRUCTOR_WRONG_PARAMETER_NAME =
+    parameterized(PsiParameter.class, PsiRecordComponent.class, "record.canonical.constructor.wrong.parameter.name")
+      .withAnchor((parameter, component) -> parameter.getNameIdentifier())
+      .withRawDescription((parameter, component) -> message(
+        "record.canonical.constructor.wrong.parameter.name", component.getName(), parameter.getName()));
 
   public static final Simple<PsiParameter> VARARG_NOT_LAST_PARAMETER = error("vararg.not.last.parameter");
   public static final Parameterized<PsiParameter, @NotNull TextRange> VARARG_CSTYLE_DECLARATION =
@@ -424,6 +456,8 @@ public final class JavaErrorKinds {
       .withRange(JavaErrorFormatUtil::getMethodDeclarationTextRange)
       .withRawDescription(
         method -> message("method.duplicate", formatMethod(method), formatClass(requireNonNull(method.getContainingClass()))));
+  public static final Simple<PsiMethod> METHOD_NO_PARAMETER_LIST =
+    error(PsiMethod.class, "method.no.parameter.list").withAnchor(PsiMethod::getNameIdentifier);
   public static final Simple<PsiJavaCodeReferenceElement> METHOD_THROWS_CLASS_NAME_EXPECTED =
     error("method.throws.class.name.expected");
   public static final Simple<PsiMethod> METHOD_INTERFACE_BODY =
@@ -709,6 +743,24 @@ public final class JavaErrorKinds {
     parameterized(PsiElement.class, JavaMismatchedCallContext.class, "call.wrong.arguments")
       .withTooltip((psi, ctx) -> ctx.createTooltip())
       .withDescription((psi, ctx) -> ctx.createDescription());
+  public static final Parameterized<PsiMethodCallExpression, PsiMethod> CALL_DIRECT_ABSTRACT_METHOD_ACCESS =
+    parameterized(PsiMethodCallExpression.class, PsiMethod.class, "call.direct.abstract.method.access")
+      .withRawDescription((call, method) -> message("call.direct.abstract.method.access", formatMethod(method)));
+  public static final Simple<PsiMethodCallExpression> CALL_CONSTRUCTOR_MUST_BE_FIRST_STATEMENT =
+    error(PsiMethodCallExpression.class, "call.constructor.must.be.first.statement")
+      .withRawDescription(call -> message("call.constructor.must.be.first.statement", call.getMethodExpression().getText() + "()"));
+  public static final Simple<PsiMethodCallExpression> CALL_CONSTRUCTOR_ONLY_ALLOWED_IN_CONSTRUCTOR =
+    error(PsiMethodCallExpression.class, "call.constructor.only.allowed.in.constructor")
+      .withRawDescription(call -> message("call.constructor.only.allowed.in.constructor", call.getMethodExpression().getText() + "()"));
+  public static final Simple<PsiMethodCallExpression> CALL_CONSTRUCTOR_MUST_BE_TOP_LEVEL_STATEMENT =
+    error(PsiMethodCallExpression.class, "call.constructor.must.be.top.level.statement")
+      .withRawDescription(call -> message("call.constructor.must.be.top.level.statement", call.getMethodExpression().getText() + "()"));
+  public static final Simple<PsiMethodCallExpression> CALL_CONSTRUCTOR_DUPLICATE =
+    error(PsiMethodCallExpression.class, "call.constructor.duplicate");
+  public static final Simple<PsiMethodCallExpression> CALL_CONSTRUCTOR_RECURSIVE =
+    error(PsiMethodCallExpression.class, "call.constructor.recursive");
+  public static final Simple<PsiMethodCallExpression> CALL_CONSTRUCTOR_RECORD_IN_CANONICAL =
+    error(PsiMethodCallExpression.class, "call.constructor.record.in.canonical");
 
   public static final Simple<PsiExpression> STRING_TEMPLATE_VOID_NOT_ALLOWED_IN_EMBEDDED =
     error("string.template.void.not.allowed.in.embedded");
